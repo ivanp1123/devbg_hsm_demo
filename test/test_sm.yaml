@@ -1,0 +1,61 @@
+---
+Test_SM:
+  states:
+    - Initial:
+        transitions:
+            - Composite:
+                - { event: start, guard: start_conditions_met, action: on_start_action }
+            - __history_Composite:
+                - event: go_composite_history
+            - Idle:
+                - event: switch_to_idle
+            - Composite_Sub2:
+                - event: go_sub2
+            - Composite_Sub3:
+                - event: go_sub3
+            - Initial:
+              - { event: trigger_regular_self_trans, action: on_regular_self_action }
+            - "__self":
+              - { event: trigger_self_trans, action: on_self_action }
+    - Idle:
+        transitions:
+            - Initial:
+                - { event: switch_to_initial, guard: initial_cond_met, action: on_initial_switch_action }
+    - Composite:
+        states:
+            - Composite_Sub1:
+                transitions:
+                    - Composite_Sub2:
+                        - { event: on_timer, guard: entry_to_sub2_allowed, action: composite_sub2_action }
+                    - Initial:
+                        - event: go_to_initial
+
+            - Composite_Sub2:
+                transitions:
+                    - Initial:
+                        - event: go_to_initial
+
+            - Composite_Sub3:
+                attributes:
+                  initial: Deep_Sub3
+                states:
+                    - Deep_Sub3:
+                        transitions:
+                            - Initial:
+                                - event: go_to_initial
+                            - Composite_Sub2:
+                                - event: go_to_sub2_direct
+                    - Deep_Sub4:
+                        transitions:
+                            - Composite_Sub1:
+                                - event: go_to_sub1_direct
+                transitions:
+                    - Composite_Sub2:
+                        - event: go_to_sub2_direct
+                    - Initial:
+                        - event: go_to_initial
+        attributes:
+            initial: Composite_Sub1
+
+  attributes:
+    initial: Initial

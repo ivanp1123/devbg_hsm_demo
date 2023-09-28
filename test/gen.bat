@@ -1,0 +1,1 @@
+..\hsmgen\hsmgen.py --conf ..\test\test_sm.yaml --outpath .\ --templatepath ..\hsmgen

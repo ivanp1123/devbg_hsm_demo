@@ -1,0 +1,76 @@
+#include "hsm.h"
+#include "hsm_user.h"
+#include "{{ sm.name }}_config_user.h"
+
+// USER_CODE_START::@main@
+// Any code placed between these two tags will be preserved during code generation!
+// USER_CODE_END::@main@
+
+// Entry/Exit functions
+{%     for state_obj in states %}
+{%-          if state_obj.supports_bool_attr("on_entry") %}
+// GEN_OBJ_START::{{ sm.name }}_on_entry_{{ state_obj.name }}
+void {{ sm.name }}_on_entry_{{ state_obj.name }}(void *const p_sm_data)
+{
+    hsm_trace("=> [ENTRY] onEntry_{{ state_obj.name }}\n");
+    // USER_CODE_START::onEntry_{{ state_obj.name }}
+
+    // Your implementation goes here...
+
+    // USER_CODE_END::onEntry_{{ state_obj.name }}
+}
+// GEN_OBJ_END::{{ sm.name }}_on_entry_{{ state_obj.name }}
+{%          endif %}
+
+{%-          if state_obj.supports_bool_attr("on_exit") %}
+// GEN_OBJ_START::{{ sm.name }}_on_exit_{{ state_obj.name }}
+void {{ sm.name }}_on_exit_{{ state_obj.name }}(void *const p_sm_data)
+{
+    hsm_trace("<= [EXIT] onExit_{{ state_obj.name }}\n");
+
+    // USER_CODE_START::onExit_{{ state_obj.name }}
+
+    // Your implementation goes here...
+
+    // USER_CODE_END::onExit_{{ state_obj.name }}
+}
+// GEN_OBJ_END::{{ sm.name }}_on_exit_{{ state_obj.name }}
+{%          endif %}
+{%      endfor %}
+
+// Guard condition functions
+{%-      for guard_name in sm.get_guards() %}
+// GEN_OBJ_START::{{ sm.name }}_guard_{{ guard_name }}
+bool {{ sm.name }}_guard_{{ guard_name }}(void *const p_sm_data)
+{
+    bool guard_res = false;
+
+    // USER_CODE_START::guard_{{ guard_name }}
+    // Your implementation goes here...
+    // guard_res = ...
+
+    // USER_CODE_END::guard_{{ guard_name }}
+
+    hsm_trace("\t[GUARD CHECK] {{ sm.name }}_guard_{{ guard_name }} => %s\n", (guard_res) ? "TRUE" : "FALSE");
+    
+    return guard_res;
+
+}
+// GEN_OBJ_END::{{ sm.name }}_guard_{{ guard_name }}
+{%      endfor %}
+
+// Action handlers
+{%-      for action_name in sm.get_actions() %}
+// GEN_OBJ_START::{{ sm.name }}_action_{{ action_name }}
+void {{ sm.name }}_action_{{ action_name }}(void *const p_sm_data)
+{
+    hsm_trace("\t[ACTION] {{ sm.name }}_action_{{ action_name }}\n");
+    // USER_CODE_START::action_{{ action_name }}
+
+    // Your implementation goes here...
+
+    // USER_CODE_END::action_{{ action_name }}
+}
+// GEN_OBJ_END::{{ sm.name }}_action_{{ action_name }}
+{%      endfor %}
+

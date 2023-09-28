@@ -1,0 +1,37 @@
+#ifndef {{ sm.name | upper }}_USER_H
+#define {{ sm.name | upper }}_USER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "hsm.h"
+
+// Stated identifiers
+enum {{ sm.name }}_states
+{
+    STATE_ROOT,
+{%-      for state_obj in states %}
+    STATE_{{ state_obj.name.upper() }},
+{%-     endfor %}
+    STATE_MAX
+};
+
+// User state machine events
+enum {{ sm.name }}_events
+{
+    HSM_EVENT_ID_RESERVED = HSM_EVENT_ID_USER,
+{%-  for event in sm.get_events() %}
+    HSM_EVENT_ID_{{ sm.name.upper() }}_{{ event.upper() }},
+{%-  endfor %}
+    HSM_EVENT_ID_{{ sm.name.upper() }}_MAX
+};
+
+// HSM instance object
+extern struct hsm_instance_t {{ sm.name }}_instance;
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif  // #ifndef {{ sm.name | upper }}_USER_H

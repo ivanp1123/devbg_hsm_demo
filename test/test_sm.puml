@@ -1,0 +1,39 @@
+@startuml
+title <b>Test_SM
+[*] --> Initial
+state Initial
+state Idle
+state Composite {
+state Composite_Sub1
+state Composite_Sub2
+state Composite_Sub3 {
+state Deep_Sub3
+state Deep_Sub4
+
+}
+
+}
+
+Initial --> Composite: <b>start</b> [start_conditions_met]\n/ on_start_action
+Initial --> Composite[H]: <b>go_composite_history</b> \n
+Initial --> Idle: <b>switch_to_idle</b> \n
+Initial --> Composite_Sub2: <b>go_sub2</b> \n
+Initial --> Composite_Sub3: <b>go_sub3</b> \n
+Initial --> Initial: <b>trigger_regular_self_trans</b> \n/ on_regular_self_action
+Initial -[dotted,#blue]-> Initial: <b>trigger_self_trans</b> \n/ on_self_action
+Idle --> Initial: <b>switch_to_initial</b> [initial_cond_met]\n/ on_initial_switch_action
+state Composite {
+[*] --> Composite_Sub1
+Composite_Sub1 --> Composite_Sub2: <b>on_timer</b> [entry_to_sub2_allowed]\n/ composite_sub2_action
+Composite_Sub1 --> Initial: <b>go_to_initial</b> \n
+Composite_Sub2 --> Initial: <b>go_to_initial</b> \n
+Composite_Sub3 --> Composite_Sub2: <b>go_to_sub2_direct</b> \n
+Composite_Sub3 --> Initial: <b>go_to_initial</b> \n
+}
+Deep_Sub3 --> Initial: <b>go_to_initial</b> \n
+Deep_Sub3 --> Composite_Sub2: <b>go_to_sub2_direct</b> \n
+Deep_Sub4 --> Composite_Sub1: <b>go_to_sub1_direct</b> \n
+state Composite_Sub3 {
+[*] --> Deep_Sub3
+}
+@enduml

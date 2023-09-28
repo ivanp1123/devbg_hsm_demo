@@ -1,0 +1,80 @@
+@startuml
+
+struct hsm_instance_t
+{
+    #const p_hsm_state_t p_root
+    #void *p_sm_data
+}
+
+class hsm {
+    +void <b>init</b>(p_hsm_instance_t const p_inst, void *const p_sm_data)
+    +bool <b>push_event</b>(p_hsm_instance_t const p_inst, const hsm_event_id_t id)
+}
+
+struct hsm_state_t
+{
+    #const struct hsm_config_t config
+    #p_hsm_state_t p_history_state
+    #p_hsm_state_t p_active_state
+}
+
+struct hsm_config_t
+{
+    #char *name
+    #hsm_state_id_t id
+    #struct hsm_trans_t *p_trans_list
+    #p_hsm_state_t p_parent_state
+    #p_hsm_state_t p_initial_state
+    #p_entry_func p_entry
+    #p_exit_func p_exit
+}
+
+struct hsm_trans_t
+{
+    #char *name
+    #hsm_event_id_t id
+    #p_guard_func p_guard
+    #p_action_func p_action
+    #p_hsm_state_t p_target_state
+    #hsm_state_trans_type_t type
+}
+
+interface p_guard_func
+{
+    +bool (*p_guard_func)(void *const p_sm_data)
+}
+
+interface p_action_func
+{
+    +void (*p_action_func)(void *const p_sm_data)
+}
+
+interface p_entry_func
+{
+    +void (*p_entry_func)(void *const p_sm_data)
+}
+
+interface p_exit_func
+{
+    +void (*p_exit_func)(void *const p_sm_data)
+}
+
+enum hsm_state_trans_type_t
+{
+    +REGULAR
+    +SELF
+    +HISTORY
+}
+
+
+hsm ..> hsm_instance_t
+hsm_instance_t ..> hsm_state_t
+hsm_state_t .. hsm_config_t
+hsm_config_t .r.> hsm_trans_t
+hsm_config_t .l.> p_entry_func
+hsm_config_t .d.> p_exit_func
+hsm_trans_t .r.> p_guard_func
+hsm_trans_t .d.> p_action_func
+hsm_trans_t .u.> hsm_state_trans_type_t
+
+@enduml

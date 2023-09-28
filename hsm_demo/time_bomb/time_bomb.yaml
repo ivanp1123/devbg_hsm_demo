@@ -1,0 +1,35 @@
+---
+time_bomb:
+    states:
+        - Unarmed:
+            transitions:
+                - Armed:
+                    - { event: arm_button_press }
+        - Armed:
+            states:
+                - Wait_For_Trigger:
+                    transitions:
+                        - Final_Countdown:
+                            - { event: phone_call_received, guard: is_intended_caller, action: turn_on_blinking_orange_led }
+                - Final_Countdown:
+                    transitions:
+                        - "__self":
+                            - { event: on_timer, guard: still_counting, action: decrease_counter }
+                        - Boom:
+                            - { event: on_timer, guard: is_count_zero }
+
+            transitions:
+                - Unarmed:
+                    - { event: wire_cut_event, guard: is_red_wire, action: turn_on_green_led }
+                - Boom:
+                    - { event: wire_cut_event, guard: is_pink_wire, action: turn_on_red_led }
+
+            attributes:
+              initial: Wait_For_Trigger
+        - Boom:
+            transitions:
+                - "__self":
+                    - { event: on_timer, action: express_pitty_on_cutting_the_wrong_wire }
+
+    attributes:
+      initial: Unarmed

@@ -1,0 +1,46 @@
+@startuml
+title {{ sm.name }}
+[*] --> {{ attributes['initial'] }}
+
+{%-      for state_obj in root_states -%}
+{%-          if state_obj.is_composite() %}
+    state {{ state_obj.name }} {
+{%              for substate in state_obj.get_substates() -%}
+        state {{ substate.name }}
+{%              endfor %}
+{%-           endif %}
+{%-      endfor %}
+}
+
+{%-      for state_obj in root_states -%}
+{%-          if state_obj.is_composite() %}
+    state {{ state_obj.name }} {
+        [*] --> {{ state_obj.attributes['initial'] }}
+{%-            for trans in state_obj.transitions_list -%}
+{%-              if trans.is_history_state_transition() -%}
+        {{ state_obj.name }} --> {{ trans.history_target_state }}[H]: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%-              else -%}
+        {{ state_obj.name }} --> {{ trans.target_state }}: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%-              endif -%}                    
+{%-            endfor %}
+{%            for substate in state_obj.get_substates() -%}
+{%-                 for trans in substate.transitions_list -%}
+{%-                     if trans.is_history_state_transition() %}
+        {{ substate.name }} --> {{ trans.history_target_state }}[H]: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%-                     else %}
+        {{ substate.name }} --> {{ trans.target_state }}: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%-                     endif -%}                    
+{%-                 endfor %}
+{%-            endfor %}
+}
+{%-          else -%}
+{%            for trans in state_obj.transitions_list -%}
+{%              if trans.is_history_state_transition() %}
+    {{ state_obj.name }} --> {{ trans.history_target_state }}[H]: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%              else %}
+    {{ state_obj.name }} --> {{ trans.target_state }}: {% if trans.is_trans_event_special() -%}<b>{% endif -%} {{ trans.get_printable_event_name() }} {% if trans.is_trans_event_special() -%}</b>{% endif -%} {% if trans.get_printable_guard_name() -%}[{{ trans.get_printable_guard_name() }}]{% endif %} {% if trans.get_printable_action_name() -%}/ {{ trans.get_printable_action_name() }}{% endif %}
+{%-              endif %}                    
+{%-            endfor -%}
+{%-          endif %}
+{%-      endfor %}
+@enduml

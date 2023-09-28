@@ -1,0 +1,22 @@
+@startuml
+title <b>time_bomb
+[*] --> Unarmed
+state Unarmed
+state Armed {
+state Wait_For_Trigger
+state Final_Countdown
+
+}
+state Boom
+
+Unarmed --> Armed: <b>arm_button_press</b> \n
+state Armed {
+[*] --> Wait_For_Trigger
+Armed --> Unarmed: <b>wire_cut_event</b> [is_red_wire]\n/ turn_on_green_led
+Armed --> Boom: <b>wire_cut_event</b> [is_pink_wire]\n/ turn_on_red_led
+Wait_For_Trigger --> Final_Countdown: <b>phone_call_received</b> [is_intended_caller]\n/ turn_on_blinking_orange_led
+Final_Countdown -[dotted,#blue]-> Final_Countdown: <b>on_timer</b> [still_counting]\n/ decrease_counter
+Final_Countdown --> Boom: <b>on_timer</b> [is_count_zero]\n
+}
+Boom -[dotted,#blue]-> Boom: <b>on_timer</b> \n/ express_pitty_on_cutting_the_wrong_wire
+@enduml

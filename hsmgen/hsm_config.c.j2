@@ -1,0 +1,151 @@
+#include <stddef.h>
+#include "hsm.h"
+#include "{{ sm.name }}_config_user.h"
+#include "{{ sm.name }}_user.h"
+
+{%      for state_obj in states %}
+{%-            for trans in state_obj.transitions_list %}
+static const struct hsm_trans_t {{ trans.trans_generated_name }};
+{%-            endfor -%}
+{%      endfor %}
+
+{%      for state_obj in states %}
+{%-          if state_obj.has_transitions() %}
+static const p_hsm_trans_t trans_{{ state_obj.name }}[] =
+{
+{%-            for trans in state_obj.transitions_list %}
+    &{{ trans.trans_generated_name }},
+{%-            endfor %}
+    NULL
+};
+{%-          endif %}
+{%      endfor %}
+
+// {{ sm.name }} states forward declarations
+{%-      for state_obj in states %}
+static struct hsm_state_t state_{{ state_obj.name }};
+{%-     endfor %}
+
+// {{ sm.name }} root state definition
+struct hsm_state_t state_{{ sm.name }} =
+{
+    {
+        // name
+        "state_{{ sm.name }}",
+        // id
+        STATE_ROOT,
+        // p_trans_list
+        NULL,
+        // p_parent_state
+        NULL,
+        // p_initial_state,
+        &state_{{ attributes.initial }},
+        // p_entry
+        NULL,
+        // p_exit
+        NULL
+    },
+    // p_history_state
+    &state_{{ attributes.initial }},
+    // p_active_state
+    &state_{{ sm.name }}
+};
+
+{%-     for state_obj in states %}
+static struct hsm_state_t state_{{ state_obj.name }} =
+{
+    // ROM config
+    {
+        // name
+        "state_{{ state_obj.name }}",
+        // id
+        STATE_{{ state_obj.name.upper() }},
+        // pTransitionList
+{%- if state_obj.has_transitions() %}
+        trans_{{ state_obj.name }},
+{%- else %}
+        NULL,
+{%- endif %}
+        // pParent
+        &state_{{ state_obj.parent }},
+        // p_initial_state,
+{%-         if state_obj.is_composite() %}
+        &state_{{ state_obj.get_attributes()['initial'] }},
+{%-          else %}
+        &state_{{ state_obj.name }},
+{%-          endif %}
+        // onEntryFunc
+{%-          if state_obj.supports_bool_attr("on_entry") %}
+        &{{ sm.name }}_on_entry_{{ state_obj.name }},
+{%-          else %}
+        NULL,
+{%-          endif %}
+        // onExitFunc
+{%-          if state_obj.supports_bool_attr("on_exit") %}
+        &{{ sm.name }}_on_exit_{{ state_obj.name }},
+{%-          else %}
+        NULL,
+{%-          endif %}
+    },
+    // pHistoryState
+{%-         if state_obj.is_composite() %}
+    &state_{{ state_obj.get_attributes()['initial'] }},
+{%-          else %}
+    &state_{{ state_obj.name }},
+{%-          endif %}
+    // pActiveState
+    &state_{{ state_obj.name }}
+};
+{%    endfor %}
+
+{%-      for state_obj in states %}
+{%-            for trans in state_obj.transitions_list %}
+static const struct hsm_trans_t {{ trans.trans_generated_name }} =
+{
+    // name
+    "{{ trans.get_printable_event_name() }}",
+    // id
+    HSM_EVENT_ID_{{ sm.name.upper() }}_{{ trans.get_printable_event_name().upper() }},
+    // guard
+{%- if trans.get_printable_guard_name() %}
+    &{{ sm.name }}_guard_{{ trans.get_printable_guard_name(state_obj.name) }},
+{%- else %}
+    NULL,
+{%- endif %}
+    // action
+{%- if trans.get_trans_action() %}
+    &{{ sm.name }}_action_{{ trans.get_printable_action_name(state_obj.name) }},
+{%- else %}
+    NULL,
+{%- endif %}
+    // target state
+{%- if trans.is_transition_to_self %}
+    &state_{{ state_obj.name }},
+{%- else %}
+    {%- if trans.is_history_state_transition() %}
+    &state_{{ trans.history_target_state }},
+    {%- else %}
+    &state_{{ trans.target_state }},
+    {%- endif %}
+{%- endif %}
+    // transition type
+{%- if trans.is_history_state_transition() %}
+    HSM_STATE_TRANS_TYPE_HISTORY
+{%- else %}
+    {%- if trans.is_transition_to_self %}
+    HSM_STATE_TRANS_TYPE_SELF,
+    {%- else %}
+    HSM_STATE_TRANS_TYPE_REGULAR
+    {%- endif %}
+{%- endif %}
+};
+{%            endfor %}
+{%-     endfor %}
+
+struct hsm_instance_t {{ sm.name }}_instance =
+{
+    // root state
+    &state_{{ sm.name }},
+    // user-data
+    NULL
+};

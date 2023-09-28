@@ -1,0 +1,38 @@
+#ifndef {{ sm.name | upper }}_CONFIG_USER_H
+#define {{ sm.name | upper }}_CONFIG_USER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "hsm.h"
+
+// USER_CODE_START::@main@
+// Any code placed between these two tags will be preserved during code generation!
+// USER_CODE_END::@main@
+
+// Entry/Exit functions
+{%-     for state_obj in states %}
+{%-          if state_obj.supports_bool_attr("on_entry") %}
+void {{ sm.name }}_on_entry_{{ state_obj.name }}(void *const p_sm_data);
+{%-          endif %}
+{%-          if state_obj.supports_bool_attr("on_exit") %}
+void {{ sm.name }}_on_exit_{{ state_obj.name }}(void *const p_sm_data);
+{%-          endif %}
+{%-      endfor %}
+
+// Guard condition functions
+{%-      for guard_name in sm.get_guards() %}
+bool {{ sm.name }}_guard_{{ guard_name }}(void *const p_sm_data);
+{%-      endfor %}
+
+// Action handlers
+{%-      for action_name in sm.get_actions() %}
+void {{ sm.name }}_action_{{ action_name }}(void *const p_sm_data);
+{%-      endfor %}
+
+#ifdef __cplusplus
+};
+#endif
+
+#endif  // #ifndef {{ sm.name | upper }}_CONFIG_USER_H
